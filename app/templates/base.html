@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{% block title %}Ecomm SaaS{% endblock %}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+  </head>
+  <body class="bg-slate-950 text-slate-100 min-h-screen">
+    <header class="border-b border-slate-800 bg-slate-900/70 backdrop-blur">
+      <div class="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
+        <a href="/" class="font-bold text-xl">EcommAI SaaS</a>
+        <nav class="flex items-center gap-4 text-sm">
+          <a class="hover:text-cyan-400" href="/">Home</a>
+          {% if session.get('user_id') %}
+            <a class="hover:text-cyan-400" href="/dashboard">Dashboard</a>
+            <a class="hover:text-cyan-400" href="/logout">Logout</a>
+          {% else %}
+            <a class="hover:text-cyan-400" href="/login">Login</a>
+            <a class="hover:text-cyan-400" href="/register">Register</a>
+          {% endif %}
+        </nav>
+      </div>
+    </header>
+
+    <main class="max-w-6xl mx-auto px-4 py-8">
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+          <div class="space-y-2 mb-6">
+            {% for category, message in messages %}
+              <div class="rounded-lg px-4 py-3 text-sm {% if category == 'success' %}bg-emerald-500/20 border border-emerald-400/30{% elif category == 'error' %}bg-rose-500/20 border border-rose-400/30{% else %}bg-slate-800 border border-slate-700{% endif %}">
+                {{ message }}
+              </div>
+            {% endfor %}
+          </div>
+        {% endif %}
+      {% endwith %}
+
+      {% block content %}{% endblock %}
+    </main>
+  </body>
+</html>

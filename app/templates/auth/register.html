@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+{% block title %}Register{% endblock %}
+{% block content %}
+<div class="max-w-2xl mx-auto bg-slate-900 border border-slate-800 rounded-2xl p-6">
+  <h1 class="text-2xl font-bold mb-6">Create Company + First Store</h1>
+  <form method="post" class="grid md:grid-cols-2 gap-4">
+    <input type="text" name="company_name" placeholder="Company Name" required class="rounded-lg bg-slate-800 border border-slate-700 px-3 py-2" />
+    <input type="text" name="name" placeholder="Owner Name" required class="rounded-lg bg-slate-800 border border-slate-700 px-3 py-2" />
+    <input type="email" name="email" placeholder="Work Email" required class="rounded-lg bg-slate-800 border border-slate-700 px-3 py-2" />
+    <input type="password" name="password" placeholder="Password" minlength="8" required class="rounded-lg bg-slate-800 border border-slate-700 px-3 py-2" />
+
+    <input type="text" name="store_name" placeholder="First Store Name" required class="rounded-lg bg-slate-800 border border-slate-700 px-3 py-2" />
+    <select name="platform" required class="rounded-lg bg-slate-800 border border-slate-700 px-3 py-2">
+      <option value="">Select platform</option>
+      <option value="Shopify">Shopify</option>
+      <option value="WooCommerce">WooCommerce</option>
+      <option value="Custom API">Custom API</option>
+    </select>
+    <input type="url" name="store_url" placeholder="https://store.example.com" required class="rounded-lg bg-slate-800 border border-slate-700 px-3 py-2 md:col-span-2" />
+    <input type="text" name="external_api_token" placeholder="Store API Token" required class="rounded-lg bg-slate-800 border border-slate-700 px-3 py-2" />
+    <input type="text" name="external_api_secret" placeholder="Store API Secret" required class="rounded-lg bg-slate-800 border border-slate-700 px-3 py-2" />
+
+    <button class="md:col-span-2 rounded-lg bg-cyan-500 hover:bg-cyan-400 text-slate-900 font-bold py-2">Create Workspace</button>
+  </form>
+  <p class="mt-4 text-sm text-slate-300">Already have an account? <a class="hover:text-cyan-400" href="/login">Login</a></p>
+</div>
+{% endblock %}

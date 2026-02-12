@@ -1,0 +1,46 @@
+{% extends 'base.html' %}
+{% block title %}Company Dashboard{% endblock %}
+{% block content %}
+<section class="space-y-6">
+  <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6">
+    <h1 class="text-2xl font-bold">{{ company_name }} Dashboard</h1>
+    <p class="text-slate-300 mt-2">مرحباً {{ user_name }} - هذه لوحة الشركة وتحتوي جميع متاجرك.</p>
+  </div>
+
+  <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6">
+    <h2 class="text-xl font-semibold mb-4">ربط متجر جديد (أو متجر ثاني للتجربة الأكاديمية)</h2>
+    <form method="post" action="/stores/add" class="grid md:grid-cols-2 gap-3">
+      <input type="text" name="store_name" placeholder="Store Name" class="rounded-lg bg-slate-800 border border-slate-700 px-3 py-2" required>
+      <select name="platform" class="rounded-lg bg-slate-800 border border-slate-700 px-3 py-2" required>
+        <option value="">Select platform</option>
+        <option value="Shopify">Shopify</option>
+        <option value="WooCommerce">WooCommerce</option>
+        <option value="Custom API">Custom API</option>
+      </select>
+      <input type="url" name="store_url" placeholder="https://store.example.com" class="rounded-lg bg-slate-800 border border-slate-700 px-3 py-2" required>
+      <input type="text" name="external_api_token" placeholder="Store API Token" class="rounded-lg bg-slate-800 border border-slate-700 px-3 py-2" required>
+      <input type="text" name="external_api_secret" placeholder="Store API Secret" class="rounded-lg bg-slate-800 border border-slate-700 px-3 py-2" required>
+      <button class="rounded-lg bg-cyan-500 hover:bg-cyan-400 text-slate-900 font-bold px-5 py-2" type="submit">Connect Store</button>
+    </form>
+  </div>
+
+  <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6">
+    <h2 class="text-xl font-semibold mb-4">Stores</h2>
+    <div class="space-y-3">
+      {% for store in stores %}
+      <div class="rounded-xl border border-slate-800 p-4 flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+        <div>
+          <p class="font-semibold">{{ store.name }} <span class="text-xs text-slate-400">({{ store.platform }})</span></p>
+          <p class="text-sm text-slate-400">{{ store.store_url }}</p>
+          <p class="text-xs text-slate-500 mt-1">Internal API Key: {{ store.internal_api_key }}</p>
+          <p class="text-xs text-slate-500">Webhook Token: {{ store.internal_webhook_token }}</p>
+        </div>
+        <a href="/dashboard/store/{{ store.id }}" class="px-4 py-2 rounded-lg border border-cyan-500 text-cyan-300 hover:bg-cyan-500/10 text-sm">Open Store Dashboard</a>
+      </div>
+      {% else %}
+      <p class="text-slate-400">No stores yet.</p>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endblock %}

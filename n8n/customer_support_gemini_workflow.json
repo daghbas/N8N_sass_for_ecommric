@@ -1,0 +1,199 @@
+{
+  "name": "Customer Support Gemini Workflow",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "customer-support",
+        "responseMode": "responseNode",
+        "options": {
+          "responseContentType": "application/json"
+        }
+      },
+      "id": "webhook-trigger",
+      "name": "Webhook Trigger",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [240, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "const body = $json.body || $json;\nconst msg = (body.message || '').toString().slice(0, 1200);\nif (!msg) {\n  throw new Error('Missing message');\n}\nconst prompt = `You are an e-commerce support assistant. Return JSON only with keys category, priority, reply. Category values: Order Issue, Refund Request, Technical Support, Complaint, General Inquiry. Priority values: High, Medium, Low. Reply: professional, short, action-oriented, max 45 words. Customer message: \"${msg.replace(/\"/g, '\\\"')}\"`;\nreturn [{ json: { customer_id: body.customer_id || 'unknown', message: msg, gemini_api_key: body.gemini_api_key || '', prompt } }];"
+      },
+      "id": "prepare-prompt",
+      "name": "Prepare Prompt",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [500, 300]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{$json.gemini_api_key}}",
+              "operation": "isEmpty"
+            }
+          ]
+        }
+      },
+      "id": "if-key-missing",
+      "name": "Gemini Key Missing?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [740, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={{$json.gemini_api_key}}",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"contents\": [{\"parts\": [{\"text\": $json.prompt}]}],\n  \"generationConfig\": {\n    \"temperature\": 0.2,\n    \"topK\": 20,\n    \"maxOutputTokens\": 120,\n    \"responseMimeType\": \"application/json\"\n  }\n}",
+        "options": {
+          "timeout": 5000,
+          "response": {
+            "response": {
+              "responseFormat": "json"
+            }
+          }
+        }
+      },
+      "id": "gemini-request",
+      "name": "Gemini API Request",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [980, 220],
+      "continueOnFail": true
+    },
+    {
+      "parameters": {
+        "jsCode": "const fallback = { category: 'General Inquiry', priority: 'Medium', reply: 'Thank you for contacting support. We are reviewing your request and will reply shortly.' };\nif ($json.error) {\n  return [{ json: { ...fallback, source: 'gemini_error' } }];\n}\ntry {\n  const text = $json.candidates?.[0]?.content?.parts?.[0]?.text || '{}';\n  const parsed = JSON.parse(text);\n  const categoryList = ['Order Issue','Refund Request','Technical Support','Complaint','General Inquiry'];\n  const priorityList = ['High','Medium','Low'];\n  const category = categoryList.includes(parsed.category) ? parsed.category : 'General Inquiry';\n  const priority = priorityList.includes(parsed.priority) ? parsed.priority : 'Medium';\n  const reply = (parsed.reply || fallback.reply).toString().slice(0, 400);\n  return [{ json: { category, priority, reply, source: 'gemini' } }];\n} catch (e) {\n  return [{ json: { ...fallback, source: 'parse_error' } }];\n}"
+      },
+      "id": "parse-response",
+      "name": "Parse Gemini JSON",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1220, 220]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{$json}}",
+        "options": {
+          "responseCode": 200
+        }
+      },
+      "id": "respond-success",
+      "name": "Respond to Webhook",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.2,
+      "position": [1460, 220]
+    },
+    {
+      "parameters": {
+        "jsCode": "return [{ json: { category: 'General Inquiry', priority: 'Medium', reply: 'Thank you for contacting support. We are reviewing your request and will reply shortly.', source: 'missing_api_key' } }];"
+      },
+      "id": "missing-key-fallback",
+      "name": "Missing Key Fallback",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [980, 420]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{$json}}",
+        "options": {
+          "responseCode": 200
+        }
+      },
+      "id": "respond-missing-key",
+      "name": "Respond Missing Key",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.2,
+      "position": [1220, 420]
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook Trigger": {
+      "main": [
+        [
+          {
+            "node": "Prepare Prompt",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Prompt": {
+      "main": [
+        [
+          {
+            "node": "Gemini Key Missing?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gemini Key Missing?": {
+      "main": [
+        [
+          {
+            "node": "Missing Key Fallback",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Gemini API Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gemini API Request": {
+      "main": [
+        [
+          {
+            "node": "Parse Gemini JSON",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse Gemini JSON": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Missing Key Fallback": {
+      "main": [
+        [
+          {
+            "node": "Respond Missing Key",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "1"
+}
