@@ -1,0 +1,22 @@
+{% extends 'base.html' %}
+{% block title %}Login{% endblock %}
+{% block content %}
+<div class="max-w-md mx-auto bg-slate-900 border border-slate-800 rounded-2xl p-6">
+  <h1 class="text-2xl font-bold mb-6">Login</h1>
+  <form method="post" class="space-y-4">
+    <div>
+      <label class="block mb-2 text-sm">Email</label>
+      <input type="email" name="email" required class="w-full rounded-lg bg-slate-800 border border-slate-700 px-3 py-2" />
+    </div>
+    <div>
+      <label class="block mb-2 text-sm">Password</label>
+      <input type="password" name="password" required class="w-full rounded-lg bg-slate-800 border border-slate-700 px-3 py-2" />
+    </div>
+    <button class="w-full rounded-lg bg-cyan-500 hover:bg-cyan-400 text-slate-900 font-bold py-2">Login</button>
+  </form>
+  <div class="mt-4 text-sm text-slate-300 flex justify-between">
+    <a href="/forgot-password" class="hover:text-cyan-400">Forgot password?</a>
+    <a href="/register" class="hover:text-cyan-400">Create account</a>
+  </div>
+</div>
+{% endblock %}

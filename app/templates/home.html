@@ -1,0 +1,24 @@
+{% extends 'base.html' %}
+{% block title %}EcommAI SaaS - Home{% endblock %}
+{% block content %}
+<section class="grid md:grid-cols-2 gap-8 items-center py-10">
+  <div>
+    <p class="text-cyan-400 font-semibold mb-3">Multi-store SaaS + AI + X Publishing</p>
+    <h1 class="text-4xl font-extrabold leading-tight mb-4">لكل شركة أكثر من متجر ولكل متجر Dashboard خاص</h1>
+    <p class="text-slate-300 mb-6">تسجل الشركة مرة واحدة، ثم تضيف متجرين أو أكثر، وكل متجر يحصل على API Key + Webhook Token + لوحة نشر وجدولة خاصة به.</p>
+    <div class="flex gap-3">
+      <a href="/register" class="px-5 py-3 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-slate-900 font-bold">ابدأ الآن</a>
+      <a href="/login" class="px-5 py-3 rounded-xl border border-slate-700 hover:border-cyan-400">تسجيل الدخول</a>
+    </div>
+  </div>
+  <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-2xl">
+    <h2 class="text-xl font-semibold mb-4">السيناريو الأكاديمي المطلوب</h2>
+    <ul class="space-y-3 text-slate-300">
+      <li>1) شركة تسجل بحساب واحد</li>
+      <li>2) تضيف متجر 1 ومتجر 2 داخل نفس الشركة</li>
+      <li>3) لكل متجر بيانات API وتوكنز داخل النظام</li>
+      <li>4) لكل متجر لوحة منفصلة للنشر والدعم الذكي</li>
+    </ul>
+  </div>
+</section>
+{% endblock %}

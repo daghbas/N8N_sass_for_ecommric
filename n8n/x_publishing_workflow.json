@@ -1,0 +1,110 @@
+{
+  "name": "X Publishing Workflow",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "x-publish",
+        "responseMode": "responseNode",
+        "options": {
+          "responseContentType": "application/json"
+        }
+      },
+      "id": "x-webhook",
+      "name": "X Publish Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [220, 260]
+    },
+    {
+      "parameters": {
+        "jsCode": "const body = $json.body || $json;\nconst text = (body.text || '').toString().slice(0, 280);\nif (!text) throw new Error('Missing text');\nif (!(body.x_bearer_token || '').toString().trim()) throw new Error('Missing X token');\nreturn [{ json: { text, x_bearer_token: body.x_bearer_token, company_id: body.company_id, scheduled_post_id: body.scheduled_post_id } }];"
+      },
+      "id": "prepare",
+      "name": "Prepare X Payload",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [480, 260]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.x.com/2/tweets",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{$json.x_bearer_token}}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={ \"text\": $json.text }",
+        "options": {
+          "timeout": 5000,
+          "response": {
+            "response": {
+              "responseFormat": "json"
+            }
+          }
+        }
+      },
+      "id": "x-api-request",
+      "name": "Publish to X API",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [760, 260],
+      "continueOnFail": true
+    },
+    {
+      "parameters": {
+        "jsCode": "if ($json.error) {\n  return [{ json: { status: 'failed', tweet_id: '', error: $json.error.message || 'x_api_error' } }];\n}\nconst tweetId = $json.data?.id || '';\nreturn [{ json: { status: tweetId ? 'posted' : 'failed', tweet_id: tweetId } }];"
+      },
+      "id": "normalize",
+      "name": "Normalize X Response",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1020, 260]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{$json}}",
+        "options": {
+          "responseCode": 200
+        }
+      },
+      "id": "respond",
+      "name": "Respond to Webhook",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.2,
+      "position": [1260, 260]
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "X Publish Webhook": {
+      "main": [[{ "node": "Prepare X Payload", "type": "main", "index": 0 }]]
+    },
+    "Prepare X Payload": {
+      "main": [[{ "node": "Publish to X API", "type": "main", "index": 0 }]]
+    },
+    "Publish to X API": {
+      "main": [[{ "node": "Normalize X Response", "type": "main", "index": 0 }]]
+    },
+    "Normalize X Response": {
+      "main": [[{ "node": "Respond to Webhook", "type": "main", "index": 0 }]]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "1"
+}
